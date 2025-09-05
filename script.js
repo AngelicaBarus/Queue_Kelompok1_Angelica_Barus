@@ -2,9 +2,26 @@
 let queueData = [];
 let operationHistory = [];
 let queueType = 'array'; // 'array', 'linkedlist', 'circular'
-let maxArraySize = 5;
+let maxArraySize = 0; // Awalnya 0, tidak ada kotak
 let frontIndex = 0;
 let rearIndex = 0;
+let isUnlimited = false;
+let isInitialized = false; // Status inisialisasi
+
+// Fungsi untuk menyesuaikan ukuran elemen berdasarkan jumlah item
+function adjustItemSize(container, itemCount) {
+    // Hapus kelas ukuran sebelumnya
+    container.classList.remove('many-items', 'very-many-items', 'extreme-items');
+    
+    // Tambahkan kelas berdasarkan jumlah item
+    if (itemCount > 15) {
+        container.classList.add('extreme-items');
+    } else if (itemCount > 10) {
+        container.classList.add('very-many-items');
+    } else if (itemCount > 5) {
+        container.classList.add('many-items');
+    }
+}
 
 // Fungsi untuk memperbarui tampilan queue
 function updateQueueVisualization() {
@@ -16,26 +33,45 @@ function updateQueueVisualization() {
     linkedListContainer.innerHTML = '';
     circularContainer.innerHTML = '';
     
+    // Hapus status inisialisasi jika sudah diupdate
+    if (isInitialized) {
+        const visualizationSection = document.querySelector('.visualization-section');
+        visualizationSection.classList.remove('initial-state');
+        
+        // Tampilkan penjelasan
+        const explanations = document.querySelectorAll('.explanation');
+        explanations.forEach(exp => {
+            exp.style.display = 'block';
+        });
+    }
+    
     if (queueType === 'array') {
         // Tampilan array statis
-        for (let i = 0; i < maxArraySize; i++) {
-            const element = document.createElement('div');
-            element.className = 'queue-item';
-            
-            if (i < queueData.length) {
-                element.textContent = queueData[i];
-                if (queueData.length === 1) {
-                    element.classList.add('both');
+        const displaySize = isUnlimited ? Math.max(queueData.length, 1) : maxArraySize;
+        
+        if (displaySize > 0) {
+            for (let i = 0; i < displaySize; i++) {
+                const element = document.createElement('div');
+                element.className = 'queue-item';
+                
+                if (i < queueData.length) {
+                    element.textContent = queueData[i];
+                    if (queueData.length === 1) {
+                        element.classList.add('both');
+                    } else {
+                        if (i === 0) element.classList.add('front');
+                        if (i === queueData.length - 1) element.classList.add('rear');
+                    }
                 } else {
-                    if (i === 0) element.classList.add('front');
-                    if (i === queueData.length - 1) element.classList.add('rear');
+                    element.classList.add('empty');
+                    element.textContent = i;
                 }
-            } else {
-                element.classList.add('empty');
-                element.textContent = i;
+                
+                arrayContainer.appendChild(element);
             }
             
-            arrayContainer.appendChild(element);
+            // Sesuaikan ukuran elemen berdasarkan jumlahnya
+            adjustItemSize(arrayContainer, displaySize);
         }
         
         // Update informasi queue
@@ -43,11 +79,13 @@ function updateQueueVisualization() {
         document.getElementById('queue-front').textContent = queueData.length > 0 ? queueData[0] : 'Tidak ada';
         document.getElementById('queue-rear').textContent = queueData.length > 0 ? queueData[queueData.length - 1] : 'Tidak ada';
         document.getElementById('queue-status').textContent = queueData.length > 0 ? 'Berisi' : 'Kosong';
-        document.getElementById('queue-type').textContent = 'Array Statis';
+        document.getElementById('queue-type').textContent = 'Array Statis' + (isUnlimited ? ' (Tidak Terbatas)' : '');
     } 
     else if (queueType === 'linkedlist') {
         // Tampilan linked list
-        if (queueData.length === 0) {
+        if (queueData.length === 0 && maxArraySize === 0) {
+            // Tidak menampilkan apa-apa jika belum diinisialisasi
+        } else if (queueData.length === 0) {
             linkedListContainer.innerHTML = '<div class="queue-item empty">Empty</div>';
         } else {
             queueData.forEach((item, index) => {
@@ -74,6 +112,9 @@ function updateQueueVisualization() {
             });
         }
         
+        // Sesuaikan ukuran elemen berdasarkan jumlahnya
+        adjustItemSize(linkedListContainer, queueData.length);
+        
         // Update informasi queue
         document.getElementById('queue-size').textContent = queueData.length;
         document.getElementById('queue-front').textContent = queueData.length > 0 ? queueData[0] : 'Tidak ada';
@@ -83,24 +124,29 @@ function updateQueueVisualization() {
     }
     else if (queueType === 'circular') {
         // Tampilan queue circular
-        for (let i = 0; i < maxArraySize; i++) {
-            const element = document.createElement('div');
-            element.className = 'queue-item';
-            element.textContent = i;
-            
-            // Hitung posisi data dalam queue circular
-            const dataIndex = (frontIndex + i) % maxArraySize;
-            const isEmpty = i >= queueData.length;
-            
-            if (!isEmpty) {
-                element.textContent = queueData[i];
-                if (i === 0) element.classList.add('front');
-                if (i === queueData.length - 1) element.classList.add('rear');
-            } else {
-                element.classList.add('empty');
+        if (maxArraySize > 0) {
+            for (let i = 0; i < maxArraySize; i++) {
+                const element = document.createElement('div');
+                element.className = 'queue-item';
+                element.textContent = i;
+                
+                // Hitung posisi data dalam queue circular
+                const dataIndex = (frontIndex + i) % maxArraySize;
+                const isEmpty = i >= queueData.length;
+                
+                if (!isEmpty) {
+                    element.textContent = queueData[i];
+                    if (i === 0) element.classList.add('front');
+                    if (i === queueData.length - 1) element.classList.add('rear');
+                } else {
+                    element.classList.add('empty');
+                }
+                
+                circularContainer.appendChild(element);
             }
             
-            circularContainer.appendChild(element);
+            // Sesuaikan ukuran elemen berdasarkan jumlahnya
+            adjustItemSize(circularContainer, maxArraySize);
         }
         
         // Update circular indicator
@@ -136,6 +182,12 @@ function addHistory(message) {
 
 // Operasi Enqueue
 function enqueue() {
+    // Cek jika queue belum diinisialisasi
+    if (!isInitialized && (queueType === 'array' || queueType === 'circular')) {
+        alert('Silakan tentukan ukuran queue terlebih dahulu dengan menekan tombol "Update Ukuran"');
+        return;
+    }
+    
     const input = document.getElementById('input-value');
     const value = input.value.trim();
     
@@ -145,7 +197,7 @@ function enqueue() {
     }
     
     // Cek jika queue penuh (hanya untuk array statis dan circular)
-    if ((queueType === 'array' || queueType === 'circular') && queueData.length >= maxArraySize) {
+    if ((queueType === 'array' || queueType === 'circular') && !isUnlimited && queueData.length >= maxArraySize) {
         addHistory(`Enqueue(Front,Rear,Queue,${value}): Gagal (Queue penuh)`);
         alert('Queue penuh! Tidak dapat melakukan enqueue.');
         return;
@@ -186,6 +238,12 @@ function enqueue() {
 
 // Operasi Dequeue
 function dequeue() {
+    // Cek jika queue belum diinisialisasi
+    if (!isInitialized && (queueType === 'array' || queueType === 'circular')) {
+        alert('Silakan tentukan ukuran queue terlebih dahulu dengan menekan tombol "Update Ukuran"');
+        return;
+    }
+    
     if (queueData.length === 0) {
         addHistory('Dequeue(Front,Rear,Queue,Item): Gagal (Queue kosong)');
         alert('Queue kosong! Tidak dapat melakukan dequeue.');
@@ -232,6 +290,12 @@ function dequeue() {
 
 // Operasi Clear Queue
 function clearQueue() {
+    // Cek jika queue belum diinisialisasi
+    if (!isInitialized && (queueType === 'array' || queueType === 'circular')) {
+        alert('Silakan tentukan ukuran queue terlebih dahulu dengan menekan tombol "Update Ukuran"');
+        return;
+    }
+    
     if (queueData.length === 0) {
         alert('Queue sudah kosong!');
         return;
@@ -309,26 +373,48 @@ function updateQueueSize() {
     const sizeInput = document.getElementById('queue-size-input');
     const newSize = parseInt(sizeInput.value);
     
-    if (newSize < 3 || newSize > 10) {
-        alert('Ukuran queue harus antara 3 dan 10');
+    if (newSize < 0) {
+        alert('Ukuran queue tidak boleh negatif');
         return;
     }
     
-    maxArraySize = newSize;
+    if (newSize === 0) {
+        isUnlimited = true;
+        maxArraySize = 0;
+        addHistory('Ukuran queue diubah menjadi: Tidak Terbatas');
+    } else {
+        isUnlimited = false;
+        maxArraySize = newSize;
+        
+        // Potong queue jika ukuran baru lebih kecil dari jumlah elemen
+        if (queueData.length > maxArraySize) {
+            queueData = queueData.slice(0, maxArraySize);
+            addHistory(`Queue dipotong menjadi ${maxArraySize} elemen`);
+        }
+        
+        addHistory(`Ukuran queue diubah menjadi: ${newSize}`);
+    }
     
-    // Reset queue jika ukuran berubah
-    queueData = [];
-    frontIndex = 0;
-    rearIndex = 0;
+    // Tandai bahwa queue sudah diinisialisasi
+    isInitialized = true;
     
-    addHistory(`Ukuran queue diubah menjadi: ${newSize}`);
     updateQueueVisualization();
 }
 
 // Inisialisasi saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
+    // Tambahkan kelas initial-state untuk menyembunyikan kotak
+    const visualizationSection = document.querySelector('.visualization-section');
+    visualizationSection.classList.add('initial-state');
+    
+    // Sembunyikan penjelasan
+    const explanations = document.querySelectorAll('.explanation');
+    explanations.forEach(exp => {
+        exp.style.display = 'none';
+    });
+    
     updateQueueVisualization();
-    addHistory('Queue dibuat. Silakan lakukan operasi.');
+    addHistory('Queue dibuat. Silakan tentukan ukuran queue terlebih dahulu.');
     
     // Event listener untuk input agar bisa menggunakan Enter
     document.getElementById('input-value').addEventListener('keypress', function(e) {
