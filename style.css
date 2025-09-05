@@ -59,6 +59,8 @@ h1 {
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     border: 1px solid #A0522D;
+    display: flex;
+    flex-direction: column;
 }
 
 .control-section {
@@ -76,6 +78,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     margin: 30px 0;
+    width: 100%;
 }
 
 .queue-title {
@@ -113,7 +116,7 @@ h1 {
 }
 
 .legend-color.front {
-    background-color: #bc6842;
+    background-color: #A0522D;
     border-color: #8B4513;
 }
 
@@ -135,26 +138,27 @@ h1 {
 
 .queue-items {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     min-height: 120px;
     margin: 20px 0;
     position: relative;
-    flex-wrap: wrap;
-    gap: 5px;
+    gap: 8px;
+    padding: 10px;
+    width: 100%;
+    transition: all 0.3s ease;
 }
 
 .queue-item {
-    min-width: 60px;
-    max-width: 80px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border: 3px solid #A0522D;
-    margin: 2px;
     display: flex;
     justify-content: center;
     align-items: center;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 16px;
     background-color: #D2B48C;
     border-radius: 8px;
     transition: all 0.3s ease;
@@ -163,6 +167,7 @@ h1 {
     word-wrap: break-word;
     text-align: center;
     padding: 5px;
+    flex-shrink: 0;
 }
 
 .queue-item.front {
@@ -412,17 +417,31 @@ input:focus {
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+    .queue-item {
+        width: 65px;
+        height: 65px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 992px) {
+    .queue-item {
+        width: 60px;
+        height: 60px;
+        font-size: 14px;
+    }
+}
+
 @media (max-width: 768px) {
     .main-content {
         flex-direction: column;
     }
     
     .queue-item {
-        min-width: 50px;
-        max-width: 60px;
-        height: 50px;
-        font-size: 12px;
-        margin: 1px;
+        width: 55px;
+        height: 55px;
+        font-size: 13px;
     }
     
     h1 {
@@ -444,16 +463,16 @@ input:focus {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
     .container {
         margin: 10px;
+        padding: 10px;
     }
     
     .queue-item {
-        min-width: 45px;
-        max-width: 50px;
-        height: 45px;
-        font-size: 10px;
+        width: 50px;
+        height: 50px;
+        font-size: 12px;
     }
     
     .color-legend {
@@ -478,4 +497,44 @@ input:focus {
     .info-item {
         font-size: 12px;
     }
+    
+    .queue-items {
+        gap: 5px;
+    }
+}
+
+@media (max-width: 400px) {
+    .queue-item {
+        width: 45px;
+        height: 45px;
+        font-size: 11px;
+    }
+}
+
+/* Untuk banyak elemen - ukuran mengecil */
+.many-items .queue-item {
+    width: 60px;
+    height: 60px;
+    font-size: 14px;
+}
+
+.very-many-items .queue-item {
+    width: 50px;
+    height: 50px;
+    font-size: 12px;
+}
+
+.extreme-items .queue-item {
+    width: 40px;
+    height: 40px;
+    font-size: 10px;
+}
+
+/* Status inisialisasi */
+.initial-state .queue-items {
+    display: none;
+}
+
+.initial-state .explanation {
+    display: none;
 }
